@@ -1,6 +1,6 @@
 #!/bin/bash -x
 vbmg () { VBoxManage.exe "$@"; }
-export PATH=$PATH:/mnt/c/Program\ Files/Oracle/VirtualBox
+export PATH=/mnt/c/Program\ Files/Oracle/VirtualBox:$PATH
 
 #setting up network
 vbmg natnetwork add --netname net_4640 --network "192.168.250.0/24" --enable
@@ -20,7 +20,6 @@ VM_NAME="VM_ACIT4640_mod2"
 SED_PROGRAM="/^Config file:/ { s/^.*:\s\+\(\S\+\)/\1/; s|\\\\|/|gp }"
 VBOX_FILE=$(vbmg showvminfo "$VM_NAME" | sed -ne "$SED_PROGRAM")
 VM_DIR=$(dirname "$VBOX_FILE")
-echo $VM_DIR
 
 #vm specifications
 vbmg modifyvm "VM_ACIT4640_mod2" --cpus 1 --memory 1024 --nic1 natnetwork --nat-network1 net_4640 --audio none
