@@ -10,7 +10,7 @@ VM_NAME="VM_ACIT4640"
 PXE_NAME="PXE_4640"
 
 clean_all(){
-	vbmg natnetwork remove --netname "$NET_NAME"
+	vbmg natnetwork remove --netname "$NETNAME"
 	vbmg unregistervm "$VM_NAME" --delete
 }
 
