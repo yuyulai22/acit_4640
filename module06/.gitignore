@@ -1,0 +1,5 @@
+.vagrant
+output/
+packer_cache/
+base_4640.box
+isos/CentOS-7-x86_64-Minimal-1810.iso
