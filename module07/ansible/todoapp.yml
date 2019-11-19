@@ -1,0 +1,145 @@
+---
+- hosts: todoapp
+  vars:
+    password: $6$QfYfvrFIVHJ$6GPPdPrC5iQWyStLH/OI5xN111c0hliPCTu1iIVWTKHx1Xs8LSNIp0OvgQyEP64xVS.OrPSdPuzp7qVapSUl8/
+  tasks:
+    #disable seLinux
+    - name: Disable SELinux
+      become: yes
+      selinux:
+        state: disabled
+    #configure firewall
+    - name: enable https
+      become: yes
+      firewalld:
+        zone: public
+        service: https
+        permanent: yes
+        state: enabled
+        immediate: yes
+    - name: enable http
+      become: yes
+      firewalld:
+        zone: public
+        service: http
+        permanent: yes
+        state: enabled
+        immediate: yes
+    - name: enable ssh
+      become: yes
+      firewalld:
+        zone: public
+        service: ssh
+        permanent: yes
+        state: enabled
+        immediate: yes
+    #create todoapp user
+    - name: Create todoapp user
+      become: yes
+      user:
+        name: todoapp
+        password: "{{password}}"
+    #mkdir app 
+    - name: Remove app directory if exists
+      become: yes 
+      file:
+        path: /home/todoapp/app
+        state: absent
+    - name: Create app directory
+      become: yes 
+      file:
+        path: /home/todoapp/app
+        state: directory
+   #install git
+    - name: Install git
+      become: yes
+      package:
+        name: git
+        state: installed
+    #install and configure nodejs
+    - name: Install nodejs
+      become: yes
+      package:
+        name: nodejs
+        state: installed
+    #clone todo app
+    - name: Clone todoapp
+      become: yes
+      git:
+        repo: 'https://github.com/timoguic/ACIT4640-todo-app.git'
+        dest: /home/todoapp/app
+    #change permissions
+    - name: Change owner of todoapp
+      become: yes
+      file:
+        path: /home/todoapp/app
+        state: directory
+        recurse: yes
+        owner: todoapp
+        group: todoapp
+        mode: '0755'
+    - name: Change todoapp permissions 
+      become: yes
+      file:
+        path: /home/todoapp/
+        mode: 'a+rx'
+    #change directory
+    - name: go to home/todoapp/app                            
+      command: pwd                                                              
+      args:                                                                     
+        chdir: /home/todoapp/app
+     #npm install 
+    - name: npm install 
+      become: yes 
+      npm:
+        path: /home/todoapp/app
+    #install and configure nginx
+    - name: Install nginx
+      become: yes
+      package:
+        name: nginx
+        state: installed
+    - name: Copy nginx to vm
+      become: yes
+      copy:
+        src: ../files/nginx.conf
+        dest: /etc/nginx/nginx.conf
+    - name: reload nginx
+      become: yes
+      service:
+        name: nginx
+        enabled: yes
+        state: started
+    #install and configure mongodb
+    - name: Install mongodb
+      become: yes
+      package:
+        name: mongodb-server
+        state: installed
+    - name: enable mongodb
+      become: yes
+      service:
+        name: mongod
+        enabled: yes
+        state: started
+    #setup and start todoapp service
+    - name: Copy todoapp service
+      become: yes
+      copy:
+        src: ../files/todoapp.service
+        dest: /lib/systemd/system/todoapp.service
+    - name: Copy databasejs
+      become: yes
+      copy:
+        src: ../files/database.js
+        dest: /home/todoapp/app/config/database.js
+    - name: Reload daemon
+      become: yes
+      systemd:
+        daemon_reload: yes
+    - name: Enable and start todoapp 
+      become: yes 
+      service: 
+        name: todoapp
+        enabled: yes
+        state: started
