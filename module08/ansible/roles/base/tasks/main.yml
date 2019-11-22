@@ -1,0 +1,13 @@
+---
+- name: disable SE Linux
+  include_role:
+    name: no_selinux
+- name: installs and sets up Nginx
+  include_role:
+    name: nginx 
+- name: installs and sets up NodeJS
+  include_role:
+    name: nodejs
+- name: installs and sets up MongoDB server
+  include_role:
+    name: mongo_server

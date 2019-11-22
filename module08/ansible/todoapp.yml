@@ -1,0 +1,9 @@
+---
+- hosts: todoapp
+  tasks:
+    - name: Use base role for system setup and ocnfig
+      include_role:
+        name: base
+    - name: Use todoapp role for user and service setup
+      include_role:
+        name: todoapp

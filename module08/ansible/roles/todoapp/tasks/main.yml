@@ -1,0 +1,74 @@
+---
+- name: Install git
+  become: yes
+  package:
+    name: git
+    state: installed
+#create todoapp user
+- name: Create todoapp user
+  become: yes
+  user:
+    name: "{{todoapp_user_name}}"
+    password: "{{password}}"
+#mkdir app 
+- name: Remove app directory if exists
+  become: yes 
+  file:
+    path: /home/{{todoapp_user_name}}/app
+    state: absent
+- name: Create app directory
+  become: yes 
+  file:
+    path: /home/{{todoapp_user_name}}/app
+    state: directory
+#change permissions
+- name: Change owner of todoapp
+  become: yes
+  file:
+    path: /home/{{todoapp_user_name}}/app
+    state: directory
+    recurse: yes
+    owner: todoapp
+    group: todoapp
+    mode: '0755'
+- name: Change todoapp permissions 
+  become: yes
+  file:
+    path: /home/{{todoapp_user_name}}/
+    mode: 'a+rx'
+#clone todo app
+- name: Clone todoapp
+  become: yes
+  git:
+    repo: "{{todoapp_repository}}"
+    dest: /home/{{todoapp_user_name}}/app
+#change directory
+- name: go to home/{{todoapp_user_name}}/app                            
+  command: pwd                                                              
+  args:                                                                     
+    chdir: /home/{{todoapp_user_name}}/app
+  #npm install 
+- name: npm install 
+  become: yes 
+  npm:
+    path: /home/{{todoapp_user_name}}/app
+- name: Copy todoapp service
+  become: yes
+  template:
+    src: todoapp_service.j2
+    dest: /lib/systemd/system/todoapp.service
+- name: Copy databasejs
+  become: yes
+  template:
+    src: database.j2
+    dest: /home/{{todoapp_user_name}}/app/config/database.js
+- name: Reload daemon
+  become: yes
+  systemd:
+    daemon_reload: yes
+- name: Enable and start todoapp 
+  become: yes 
+  service: 
+    name: todoapp
+    enabled: yes
+    state: started

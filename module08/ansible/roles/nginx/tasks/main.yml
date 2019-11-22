@@ -1,0 +1,41 @@
+---
+- name: Install nginx
+  become: yes
+  package:
+    name: nginx
+    state: installed
+- name: Copy nginx to vm
+  become: yes
+  template:
+    src: nginx_conf.j2
+    dest: /etc/nginx/nginx.conf
+- name: reload nginx
+  become: yes
+  service:
+    name: nginx
+    enabled: yes
+    state: started
+- name: enable https
+  become: yes
+  firewalld:
+    zone: public
+    service: https
+    permanent: yes
+    state: enabled
+    immediate: yes
+- name: enable http
+  become: yes
+  firewalld:
+    zone: public
+    service: http
+    permanent: yes
+    state: enabled
+    immediate: yes
+- name: enable ssh
+  become: yes
+  firewalld:
+    zone: public
+    service: ssh
+    permanent: yes
+    state: enabled
+    immediate: yes
